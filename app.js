@@ -1,6 +1,6 @@
 // --- CONFIGURATION ---
 const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
-const RAZORPAY_KEY = "rzp_test_YOUR_TEST_KEY_HERE"; // Get this from Razorpay Dashboard
+const RAZORPAY_KEY = "rzp_test_T1D1B9oUvXaqs2"; // Get this from Razorpay Dashboard
 
 // --- STATE MANAGEMENT ---
 let user = JSON.parse(localStorage.getItem('mockUser')) || null;
