@@ -3,67 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free Online Mock Test</title>
+    <title>MS Astra | Elite Banker Academy</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
 
-    <div id="auth-section" class="container">
-        <h2>Mock Test Platform</h2>
-        <div id="login-box">
-            <input type="email" id="log-email" placeholder="Email">
-            <input type="password" id="log-pass" placeholder="Password">
-            <button onclick="login()">Login</button>
-            <p onclick="toggleAuth()" class="link">New? Register Here</p>
+    <!-- Elite Landing Page -->
+    <div id="landing-section" class="container">
+        <div class="hero">
+            <h1 class="gold-text">MS ASTRA</h1>
+            <h2 class="neon-text">Elite Banker Academy</h2>
+            <p>Next-Generation Mock Tests. Dominate the Exam.</p>
         </div>
-        <div id="reg-box" style="display:none;">
+        
+        <div id="course-catalog">
+            <h3 style="text-align:center; margin-bottom: 15px;">Premium Courses</h3>
+            <div id="courses-list">Loading academy data...</div>
+        </div>
+        <button onclick="showAuth()" class="btn-gold" style="margin-top:30px;">Login to Portal</button>
+    </div>
+
+    <!-- Auth Section -->
+    <div id="auth-section" class="container hidden">
+        <h2 class="neon-text" style="text-align:center;">Secure Access</h2>
+        <div id="login-box">
+            <input type="email" id="log-email" placeholder="Registered Email">
+            <input type="password" id="log-pass" placeholder="Password">
+            <button onclick="login()">Enter Vault</button>
+            <p onclick="toggleAuth()" style="text-align:center; cursor:pointer; color:#00f3ff; margin-top:15px;">Enroll as a New Recruit</p>
+        </div>
+        <div id="reg-box" class="hidden">
             <input type="text" id="reg-name" placeholder="Full Name">
             <input type="number" id="reg-mobile" placeholder="Mobile Number">
             <input type="email" id="reg-email" placeholder="Email">
             <input type="password" id="reg-pass" placeholder="Password">
-            <button onclick="register()">Register</button>
-            <p onclick="toggleAuth()" class="link">Have an account? Login</p>
+            <button onclick="register()" class="btn-gold">Create Profile</button>
+            <p onclick="toggleAuth()" style="text-align:center; cursor:pointer; color:#00f3ff; margin-top:15px;">Return to Login</p>
         </div>
-        <p id="auth-msg"></p>
+        <p id="auth-msg" style="text-align:center; margin-top:10px; color:#ffd700;"></p>
     </div>
 
+    <!-- Dashboard (Nested Navigation) -->
     <div id="dashboard-section" class="container hidden">
-        <h2>Welcome, <span id="user-name"></span></h2>
-        <p>Status: <span id="pay-status" class="badge"></span></p>
-        <p>Attempts Left: <span id="attempts-left"></span></p>
+        <h2>Welcome, <span id="user-name" class="gold-text"></span></h2>
+        <button onclick="logout()" style="border-color:#ff3366; color:#ff3366; margin-bottom:20px;">Logout</button>
         
-        <div id="payment-box" class="hidden">
-            <p>Unlock Premium Tests Now!</p>
-            <button onclick="payWithRazorpay()" class="pay-btn">Pay ₹99 to Unlock</button>
-        </div>
-
-        <div id="test-start-box" class="hidden">
-            <button onclick="startTest()" class="start-btn">Start Mock Test</button>
-        </div>
-        <button onclick="logout()" class="logout-btn">Logout</button>
+        <div id="my-courses-area"></div>
+        <div id="subjects-area" class="hidden"></div>
+        <div id="tests-area" class="hidden"></div>
     </div>
 
+    <!-- Test Engine Section -->
     <div id="test-section" class="container hidden">
         <div class="test-header">
-            <h3>Question <span id="q-num">1</span> of <span id="total-q"></span></h3>
-            <h3 class="timer" id="timer">10:00</h3>
+            <h3>Q <span id="q-num">1</span> / <span id="total-q"></span></h3>
+            <div class="timer" id="timer">10:00</div>
         </div>
-        <div class="question-box">
-            <p id="q-text">Loading question...</p>
-            <div class="options" id="options-container"></div>
+        <div style="margin: 20px 0;">
+            <p id="q-text" style="font-size: 1.2rem;">Initializing...</p>
+            <div id="options-container" style="margin-top: 15px;"></div>
         </div>
-        <button onclick="nextQuestion()" id="next-btn" disabled>Next Question</button>
-    </div>
-
-    <div id="result-section" class="container hidden">
-        <h2>Test Submitted!</h2>
-        <div class="score-card">
-            <h3>Score: <span id="res-score"></span> / <span id="res-total"></span></h3>
-            <h3>Percentage: <span id="res-percent"></span>%</h3>
-        </div>
-        <button onclick="goHome()">Back to Dashboard</button>
-        <div id="review-box"></div>
+        <button onclick="nextQuestion()" id="next-btn" class="btn-gold" disabled>Lock Answer & Proceed</button>
     </div>
 
     <script src="app.js"></script>
