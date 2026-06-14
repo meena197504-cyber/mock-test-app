@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxzlNX002LXQZQHvGP5fdAShU61tsiAMFQvLVNf_E5OdsVGYxGykp252YpXgeeTpq2LZQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzb9Id8SvPUhNzARHGUU5PHT_0UuzLtphyeuwSV4OS_UJAZiTdjql2b82ic_ovR1clEBw/exec";
 const RAZORPAY_KEY = "rzp_test_T1D1B9oUvXaqs2";
 const MAX_ATTEMPTS = 5;
 
