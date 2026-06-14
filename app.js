@@ -1,6 +1,6 @@
 // --- CONFIGURATION ---
-const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL"; // PASTE YOUR URL HERE
-const RAZORPAY_KEY = "rzp_test_YOUR_TEST_KEY_HERE"; // PASTE YOUR RAZORPAY KEY HERE
+const API_URL = "https://script.google.com/macros/s/AKfycbzb9Id8SvPUhNzARHGUU5PHT_0UuzLtphyeuwSV4OS_UJAZiTdjql2b82ic_ovR1clEBw/execL"; // PASTE YOUR URL HERE
+const RAZORPAY_KEY = "rzp_test_T1D1B9oUvXaqs2"; // PASTE YOUR RAZORPAY KEY HERE
 const MAX_ATTEMPTS = 5;
 
 // --- STATE MANAGEMENT ---
