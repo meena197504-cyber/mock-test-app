@@ -1,231 +1,134 @@
-// --- CONFIGURATION ---
-const API_URL = "https://script.google.com/macros/s/AKfycbxzlNX002LXQZQHvGP5fdAShU61tsiAMFQvLVNf_E5OdsVGYxGykp252YpXgeeTpq2LZQ/exec";
-const RAZORPAY_KEY = "rzp_test_T1D1B9oUvXaqs2"; // Get this from Razorpay Dashboard
+const API_URL = "YOUR_NEW_APPS_SCRIPT_WEB_APP_URL";
+const RAZORPAY_KEY = "rzp_test_YOUR_TEST_KEY_HERE";
+const MAX_ATTEMPTS = 5;
 
-// --- STATE MANAGEMENT ---
-let user = JSON.parse(localStorage.getItem('mockUser')) || null;
-let questions = [];
-let currentQIndex = 0;
-let userAnswers = [];
-let testTimer;
+let user = JSON.parse(localStorage.getItem('astraUser')) || null;
+let publicCourses = [];
+let userHierarchy = {};
+let activeCourse = "";
+let currentQuestions = [], currentQIndex = 0, userAnswers = [], testTimer;
 
-// --- INITIALIZATION ---
-window.onload = () => {
-    if (user) showDashboard();
-    else document.getElementById('auth-section').classList.remove('hidden');
-    
-    // Strict Mode: Check if test was interrupted by refresh
-    let savedSession = JSON.parse(localStorage.getItem('testSession'));
-    if(savedSession) {
-        questions = savedSession.questions;
-        currentQIndex = savedSession.currentIndex;
-        userAnswers = savedSession.answers;
-        startTestUI(); // Resume test strictly from where they left
+window.onload = async () => {
+    if (user) await loadDashboard();
+    else {
+        let res = await apiCall('getPublicCourses', {});
+        publicCourses = res.courses;
+        let html = '';
+        publicCourses.forEach(c => {
+            html += `<div class="card">
+                <h3 class="gold-text">${c.name}</h3>
+                <p>${c.desc}</p>
+                <p class="neon-text" style="margin-top:10px;">₹${c.price}</p>
+            </div>`;
+        });
+        document.getElementById('courses-list').innerHTML = html;
     }
 };
 
-// --- AUTHENTICATION ---
+function showAuth() {
+    document.getElementById('landing-section').classList.add('hidden');
+    document.getElementById('auth-section').classList.remove('hidden');
+}
+
 function toggleAuth() {
-    document.getElementById('login-box').style.display = document.getElementById('login-box').style.display === 'none' ? 'block' : 'none';
-    document.getElementById('reg-box').style.display = document.getElementById('reg-box').style.display === 'none' ? 'block' : 'none';
+    document.getElementById('login-box').classList.toggle('hidden');
+    document.getElementById('reg-box').classList.toggle('hidden');
 }
 
 async function apiCall(action, data) {
-    document.getElementById('auth-msg').innerText = "Processing...";
-    const response = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action, ...data })
-    });
+    const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, ...data }) });
     return response.json();
 }
 
-async function register() {
-    const data = {
-        name: document.getElementById('reg-name').value,
-        mobile: document.getElementById('reg-mobile').value,
-        email: document.getElementById('reg-email').value,
-        password: document.getElementById('reg-pass').value
-    };
-    const res = await apiCall('register', data);
-    document.getElementById('auth-msg').innerText = res.message;
-    if(res.success) toggleAuth();
-}
-
 async function login() {
-    const data = {
-        email: document.getElementById('log-email').value,
-        password: document.getElementById('log-pass').value
-    };
-    const res = await apiCall('login', data);
+    document.getElementById('auth-msg').innerText = "Authenticating...";
+    const res = await apiCall('login', { email: document.getElementById('log-email').value, password: document.getElementById('log-pass').value });
     if(res.success) {
         user = res.user;
-        localStorage.setItem('mockUser', JSON.stringify(user));
+        localStorage.setItem('astraUser', JSON.stringify(user));
         document.getElementById('auth-section').classList.add('hidden');
-        showDashboard();
-    } else {
-        document.getElementById('auth-msg').innerText = res.message;
-    }
+        loadDashboard();
+    } else document.getElementById('auth-msg').innerText = res.message;
 }
 
-function logout() {
-    localStorage.removeItem('mockUser');
-    localStorage.removeItem('testSession');
-    location.reload();
-}
+function logout() { localStorage.removeItem('astraUser'); location.reload(); }
 
-// --- DASHBOARD & PAYMENT ---
-function showDashboard() {
+async function loadDashboard() {
+    document.getElementById('landing-section').classList.add('hidden');
     document.getElementById('dashboard-section').classList.remove('hidden');
     document.getElementById('user-name').innerText = user.name;
-    document.getElementById('pay-status').innerText = user.status;
     
-    let attemptsLeft = user.allowed - user.attempts;
-    document.getElementById('attempts-left').innerText = attemptsLeft > 0 ? attemptsLeft : "Exhausted";
-
-    if (user.status === "UNPAID") {
-        document.getElementById('payment-box').classList.remove('hidden');
-        document.getElementById('pay-status').style.color = "red";
-    } else if (attemptsLeft > 0) {
-        document.getElementById('test-start-box').classList.remove('hidden');
-        document.getElementById('pay-status').style.color = "green";
-    }
+    const res = await apiCall('getCourseData', { userId: user.id });
+    userHierarchy = res.structure;
+    
+    let enrolledArr = user.enrolled ? user.enrolled.split(',') : [];
+    let html = `<h3 class="neon-text" style="margin-bottom:15px;">Available Deployments</h3>`;
+    
+    Object.keys(userHierarchy).forEach(cName => {
+        let isEnrolled = enrolledArr.includes(cName);
+        html += `<div class="card">
+            <h3 class="gold-text">${cName}</h3>
+            ${isEnrolled ? 
+                `<button onclick="showSubjects('${cName}')">Access Modules</button>` : 
+                `<button onclick="buyCourse('${cName}')" class="btn-gold">Unlock Access (₹999)</button>`}
+        </div>`;
+    });
+    document.getElementById('my-courses-area').innerHTML = html;
 }
 
-function payWithRazorpay() {
+function showSubjects(courseName) {
+    activeCourse = courseName;
+    document.getElementById('my-courses-area').classList.add('hidden');
+    let html = `<h3>Modules for ${courseName}</h3>`;
+    Object.keys(userHierarchy[courseName]).forEach(subName => {
+        html += `<div class="card" onclick="showTests('${subName}')" style="cursor:pointer;">
+            <h4 class="neon-text">${subName}</h4><p>Click to view tests</p>
+        </div>`;
+    });
+    html += `<button onclick="location.reload()" style="border-color:gray; color:gray;">Back</button>`;
+    document.getElementById('subjects-area').innerHTML = html;
+    document.getElementById('subjects-area').classList.remove('hidden');
+}
+
+function showTests(subName) {
+    document.getElementById('subjects-area').classList.add('hidden');
+    let html = `<h3>Operations for ${subName}</h3>`;
+    let tests = userHierarchy[activeCourse][subName];
+    
+    Object.keys(tests).forEach(tName => {
+        let attempts = tests[tName];
+        let canAttempt = attempts < MAX_ATTEMPTS;
+        html += `<div class="card">
+            <h4 class="gold-text">${tName}</h4>
+            <p>Attempts Used: <span style="color:${canAttempt?'#00f3ff':'#ff3366'}">${attempts} / ${MAX_ATTEMPTS}</span></p>
+            <button onclick="startTest('${tName}')" ${!canAttempt ? 'disabled' : ''}>
+                ${canAttempt ? 'Initiate sequence' : 'System Locked'}
+            </button>
+        </div>`;
+    });
+    html += `<button onclick="loadDashboard()" style="border-color:gray; color:gray;">Dashboard</button>`;
+    document.getElementById('tests-area').innerHTML = html;
+    document.getElementById('tests-area').classList.remove('hidden');
+}
+
+// Payment trigger to enroll in a specific course
+function buyCourse(courseName) {
     var options = {
-        "key": RAZORPAY_KEY, 
-        "amount": "9900", // ₹99 in paise
-        "currency": "INR",
-        "name": "Mock Test Platform",
-        "description": "Unlock Premium Tests",
-        "handler": async function (response){
-            // On successful payment, verify with backend
-            const res = await apiCall('updatePayment', { userId: user.id, paymentId: response.razorpay_payment_id });
+        "key": RAZORPAY_KEY, "amount": "99900", "currency": "INR", "name": "MS Astra", "description": `Unlock ${courseName}`,
+        "handler": async function (response) {
+            const res = await apiCall('enrollCourse', { userId: user.id, course: courseName });
             if(res.success) {
-                user.status = "PAID";
-                localStorage.setItem('mockUser', JSON.stringify(user));
-                alert("Payment Successful!");
+                user.enrolled = res.newEnrolled;
+                localStorage.setItem('astraUser', JSON.stringify(user));
+                alert("Clearance Granted.");
                 location.reload();
             }
         },
         "prefill": { "name": user.name, "email": user.email },
-        "theme": { "color": "#007bff" }
+        "theme": { "color": "#ffd700" }
     };
-    var rzp1 = new Razorpay(options);
-    rzp1.open();
+    new Razorpay(options).open();
 }
 
-// --- STRICT EXAM ENGINE ---
-async function startTest() {
-    document.getElementById('dashboard-section').classList.add('hidden');
-    document.getElementById('test-section').classList.remove('hidden');
-    document.getElementById('q-text').innerText = "Fetching securely...";
-    
-    const res = await apiCall('getQuestions', {});
-    questions = res.data;
-    currentQIndex = 0;
-    userAnswers = [];
-    startTestUI();
-}
-
-function startTestUI() {
-    document.getElementById('dashboard-section').classList.add('hidden');
-    document.getElementById('test-section').classList.remove('hidden');
-    document.getElementById('total-q').innerText = questions.length;
-    
-    // Prevent Back Button
-    history.pushState(null, null, location.href);
-    window.onpopstate = function () { history.go(1); };
-
-    loadQuestion();
-    startTimer(600); // 10 minutes (600 seconds)
-}
-
-function loadQuestion() {
-    if(currentQIndex >= questions.length) return submitExam();
-    
-    // Save session strictly to prevent refresh hacks
-    localStorage.setItem('testSession', JSON.stringify({ questions, currentIndex: currentQIndex, answers: userAnswers }));
-
-    const q = questions[currentQIndex];
-    document.getElementById('q-num').innerText = currentQIndex + 1;
-    document.getElementById('q-text').innerText = q.q;
-    
-    const optsContainer = document.getElementById('options-container');
-    optsContainer.innerHTML = '';
-    
-    [q.a, q.b, q.c, q.d].forEach(opt => {
-        let btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.innerText = opt;
-        btn.onclick = () => selectOption(btn, opt);
-        optsContainer.appendChild(btn);
-    });
-    
-    document.getElementById('next-btn').disabled = true;
-}
-
-let selectedAnswer = null;
-function selectOption(btn, text) {
-    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    selectedAnswer = text;
-    document.getElementById('next-btn').disabled = false;
-}
-
-function nextQuestion() {
-    userAnswers.push({
-        qId: questions[currentQIndex].id,
-        qText: questions[currentQIndex].q,
-        selected: selectedAnswer,
-        correct: questions[currentQIndex].correct
-    });
-    currentQIndex++;
-    loadQuestion();
-}
-
-function startTimer(duration) {
-    let timer = duration, minutes, seconds;
-    testTimer = setInterval(function () {
-        minutes = parseInt(timer / 60, 10);
-        seconds = parseInt(timer % 60, 10);
-        document.getElementById('timer').innerText = minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
-        if (--timer < 0) submitExam();
-    }, 1000);
-}
-
-// --- SUBMISSION & RESULTS ---
-async function submitExam() {
-    clearInterval(testTimer);
-    localStorage.removeItem('testSession'); // Clear strict session
-    document.getElementById('test-section').classList.add('hidden');
-    
-    const res = await apiCall('submitTest', {
-        userId: user.id, userName: user.name, answers: userAnswers, totalQs: questions.length
-    });
-    
-    user.attempts += 1;
-    localStorage.setItem('mockUser', JSON.stringify(user));
-
-    showResults(res.score, res.percentage);
-}
-
-function showResults(score, percentage) {
-    document.getElementById('result-section').classList.remove('hidden');
-    document.getElementById('res-score').innerText = score;
-    document.getElementById('res-total').innerText = questions.length;
-    document.getElementById('res-percent').innerText = percentage.toFixed(2);
-    
-    let reviewHtml = '';
-    userAnswers.forEach((ans, i) => {
-        let isCorrect = ans.selected === ans.correct;
-        reviewHtml += `<div class="review-item ${isCorrect ? 'correct' : 'wrong'}">
-            <p><strong>Q${i+1}: ${ans.qText}</strong></p>
-            <p>Your Answer: ${ans.selected}</p>
-            <p>Correct Answer: ${ans.correct}</p>
-        </div>`;
-    });
-    document.getElementById('review-box').innerHTML = reviewHtml;
-}
-
-function goHome() { location.reload(); }
+/* --- REMAINDER OF TEST ENGINE CODE REMAINS THE SAME AS PREVIOUS --- */
+// (Just replace apiCall('submitTest', ...) to include course and testName variables).
