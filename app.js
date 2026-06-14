@@ -1,5 +1,5 @@
-const API_URL = "YOUR_NEW_APPS_SCRIPT_WEB_APP_URL";
-const RAZORPAY_KEY = "rzp_test_YOUR_TEST_KEY_HERE";
+const API_URL = "https://script.google.com/macros/s/AKfycbxzlNX002LXQZQHvGP5fdAShU61tsiAMFQvLVNf_E5OdsVGYxGykp252YpXgeeTpq2LZQ/exec";
+const RAZORPAY_KEY = "rzp_test_T1D1B9oUvXaqs2";
 const MAX_ATTEMPTS = 5;
 
 let user = JSON.parse(localStorage.getItem('astraUser')) || null;
