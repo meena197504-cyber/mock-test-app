@@ -1,72 +1,57 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MS Astra | Elite Banker Academy</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-</head>
 <body>
-
-    <!-- Elite Landing Page -->
     <div id="landing-section" class="container">
         <div class="hero">
-            <h1 class="gold-text">MS ASTRA</h1>
-            <h2 class="neon-text">Elite Banker Academy</h2>
+            <h1 class="primary-text">MS ASTRA</h1>
+            <h2 class="secondary-text">Elite Banker Academy</h2>
             <p>Next-Generation Mock Tests. Dominate the Exam.</p>
         </div>
         
         <div id="course-catalog">
-            <h3 style="text-align:center; margin-bottom: 15px;">Premium Courses</h3>
+            <h3 style="text-align:center; margin-bottom: 15px; color: #333;">Premium Courses</h3>
             <div id="courses-list">Loading academy data...</div>
         </div>
-        <button onclick="showAuth()" class="btn-gold" style="margin-top:30px;">Login to Portal</button>
+        <button onclick="showAuth()" style="margin-top:30px;">Login to Portal</button>
     </div>
 
-    <!-- Auth Section -->
     <div id="auth-section" class="container hidden">
-        <h2 class="neon-text" style="text-align:center;">Secure Access</h2>
+        <h2 class="primary-text" style="text-align:center; margin-bottom: 20px;">Secure Access</h2>
         <div id="login-box">
             <input type="email" id="log-email" placeholder="Registered Email">
             <input type="password" id="log-pass" placeholder="Password">
             <button onclick="login()">Enter Vault</button>
-            <p onclick="toggleAuth()" style="text-align:center; cursor:pointer; color:#00f3ff; margin-top:15px;">Enroll as a New Recruit</p>
+            <p onclick="toggleAuth()" class="auth-link">Enroll as a New Recruit</p>
         </div>
         <div id="reg-box" class="hidden">
             <input type="text" id="reg-name" placeholder="Full Name">
             <input type="number" id="reg-mobile" placeholder="Mobile Number">
             <input type="email" id="reg-email" placeholder="Email">
             <input type="password" id="reg-pass" placeholder="Password">
-            <button onclick="register()" class="btn-gold">Create Profile</button>
-            <p onclick="toggleAuth()" style="text-align:center; cursor:pointer; color:#00f3ff; margin-top:15px;">Return to Login</p>
+            <button onclick="register()">Create Profile</button>
+            <p onclick="toggleAuth()" class="auth-link">Return to Login</p>
         </div>
-        <p id="auth-msg" style="text-align:center; margin-top:10px; color:#ffd700;"></p>
+        <p id="auth-msg" style="text-align:center; margin-top:15px; font-weight: 500;"></p>
     </div>
 
-    <!-- Dashboard (Nested Navigation) -->
     <div id="dashboard-section" class="container hidden">
-        <h2>Welcome, <span id="user-name" class="gold-text"></span></h2>
-        <button onclick="logout()" style="border-color:#ff3366; color:#ff3366; margin-bottom:20px;">Logout</button>
+        <h2>Welcome, <span id="user-name" class="primary-text"></span></h2>
+        <button onclick="logout()" class="btn-outline" style="margin-bottom:20px;">Logout</button>
         
         <div id="my-courses-area"></div>
         <div id="subjects-area" class="hidden"></div>
         <div id="tests-area" class="hidden"></div>
     </div>
 
-    <!-- Test Engine Section -->
     <div id="test-section" class="container hidden">
         <div class="test-header">
             <h3>Q <span id="q-num">1</span> / <span id="total-q"></span></h3>
             <div class="timer" id="timer">10:00</div>
         </div>
         <div style="margin: 20px 0;">
-            <p id="q-text" style="font-size: 1.2rem;">Initializing...</p>
+            <p id="q-text" style="font-size: 1.2rem; color:#333;">Initializing...</p>
             <div id="options-container" style="margin-top: 15px;"></div>
         </div>
-        <button onclick="nextQuestion()" id="next-btn" class="btn-gold" disabled>Lock Answer & Proceed</button>
+        <button onclick="nextQuestion()" id="next-btn" disabled>Lock Answer & Proceed</button>
     </div>
 
     <script src="app.js"></script>
 </body>
-</html>
