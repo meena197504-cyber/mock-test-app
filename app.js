@@ -1,7 +1,7 @@
 // --- 1. CONFIGURATION & API ENGINE (DO NOT DELETE) ---
 // REPLACE THIS LINK WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
 const API_URL = "https://script.google.com/macros/s/AKfycbyE3zs1OIZamJFv6beldzijirdsRFH2nq07rJCxjuAidXT0w0sA3q5vHsnQPwn4NFwwjg/exec"; 
-
+let currentUser = null; // Add this line to track the logged-in recruit
 async function apiCall(action, data) {
     try {
         const response = await fetch(API_URL, { 
