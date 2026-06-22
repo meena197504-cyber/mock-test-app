@@ -30,17 +30,20 @@ async function apiCall(action, data) {
 
 // --- 3. DOM NAVIGATION FUNCTIONS ---
 function showAuth() {
-    document.getElementById('landing-section').classList.add('hidden');
-    document.getElementById('auth-section').classList.remove('hidden');
+    if (currentUser) {
+        // Smart Check: If they are already logged in, take them straight to the dashboard
+        document.getElementById('landing-section').classList.add('hidden');
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('dashboard-section').classList.remove('hidden');
+        loadDashboard();
+    } else {
+        // Otherwise, show the login screen
+        document.getElementById('landing-section').classList.add('hidden');
+        document.getElementById('auth-section').classList.remove('hidden');
+    }
 }
 
-function toggleAuth() 
-function browseCatalog() {
-    // Keeps the user logged in, but switches the view back to the catalog
-    document.getElementById('dashboard-section').classList.add('hidden');
-    document.getElementById('landing-section').classList.remove('hidden');
-}
-{
+function toggleAuth() {
     const loginBox = document.getElementById('login-box');
     const regBox = document.getElementById('reg-box');
     const msg = document.getElementById('auth-msg');
@@ -54,6 +57,13 @@ function browseCatalog() {
         loginBox.classList.add('hidden');
         regBox.classList.remove('hidden');
     }
+}
+
+function browseCatalog() {
+    // Keeps the user logged in, but switches the view back to the catalog
+    document.getElementById('dashboard-section').classList.add('hidden');
+    document.getElementById('auth-section').classList.add('hidden');
+    document.getElementById('landing-section').classList.remove('hidden');
 }
 
 
@@ -127,8 +137,9 @@ async function register() {
 }
 
 function logout() {
-    currentUser = null;
+    currentUser = null; // Erase login memory
     document.getElementById('dashboard-section').classList.add('hidden');
+    document.getElementById('auth-section').classList.add('hidden');
     document.getElementById('landing-section').classList.remove('hidden');
     document.getElementById('log-email').value = "";
     document.getElementById('log-pass').value = "";
@@ -234,6 +245,7 @@ function renderMyCourses() {
 
 async function enrollIn(courseName) {
     if (!currentUser) {
+        // If they click enroll but aren't logged in, show the login screen
         alert("Please login to enroll in a course.");
         showAuth();
         return;
@@ -245,8 +257,9 @@ async function enrollIn(courseName) {
         alert(`Successfully enrolled in ${courseName}!`);
         currentUser.enrolled = res.newEnrolled; 
         
-        // Hide the catalog and bring them back to their updated dashboard
+        // Return directly to the dashboard
         document.getElementById('landing-section').classList.add('hidden');
+        document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('dashboard-section').classList.remove('hidden');
         
         loadDashboard(); 
