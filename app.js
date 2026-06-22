@@ -1,7 +1,15 @@
-// --- 1. CONFIGURATION & API ENGINE (DO NOT DELETE) ---
-// REPLACE THIS LINK WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
+// ==========================================
+// MS ASTRA: ELITE BANKER ACADEMY
+// MAIN APPLICATION LOGIC
+// ==========================================
+
+// --- 1. CONFIGURATION & STATE ---
+// CRITICAL: Replace this link with your actual Google Apps Script Web App URL
 const API_URL = "https://script.google.com/macros/s/AKfycbyE3zs1OIZamJFv6beldzijirdsRFH2nq07rJCxjuAidXT0w0sA3q5vHsnQPwn4NFwwjg/exec"; 
-let currentUser = null; // Add this line to track the logged-in recruit
+let currentUser = null; // Tracks the currently logged-in recruit
+
+
+// --- 2. API CONNECTION ENGINE ---
 async function apiCall(action, data) {
     try {
         const response = await fetch(API_URL, { 
@@ -19,15 +27,13 @@ async function apiCall(action, data) {
     }
 }
 
-// --- 2. DOM NAVIGATION FUNCTIONS ---
 
-// Shows the login/signup section
+// --- 3. DOM NAVIGATION FUNCTIONS ---
 function showAuth() {
     document.getElementById('landing-section').classList.add('hidden');
     document.getElementById('auth-section').classList.remove('hidden');
 }
 
-// Toggles between Login and Registration boxes
 function toggleAuth() {
     const loginBox = document.getElementById('login-box');
     const regBox = document.getElementById('reg-box');
@@ -44,8 +50,8 @@ function toggleAuth() {
     }
 }
 
-// --- 3. AUTHENTICATION LOGIC ---
 
+// --- 4. AUTHENTICATION LOGIC ---
 async function login() {
     const email = document.getElementById('log-email').value;
     const pass = document.getElementById('log-pass').value;
@@ -53,12 +59,12 @@ async function login() {
 
     if (!email || !pass) {
         msg.innerText = "Please fill in all fields.";
-        msg.style.color = "#d32f2f"; // Red error
+        msg.style.color = "#d32f2f";
         return;
     }
 
     msg.innerText = "Authenticating...";
-    msg.style.color = "#0066cc"; // Blue loading
+    msg.style.color = "#0066cc";
 
     const res = await apiCall('login', { email: email, password: pass });
     
@@ -66,11 +72,15 @@ async function login() {
         msg.innerText = "Access Granted.";
         msg.style.color = "green";
         
-        // Move to dashboard
+        currentUser = res.user; // Save user data globally
+        
+        // Move to dashboard and load specific data
         setTimeout(() => {
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
-            document.getElementById('user-name').innerText = res.user.name;
+            document.getElementById('user-name').innerText = currentUser.name;
+            
+            loadDashboard(); 
         }, 800);
     } else {
         msg.innerText = res.message || "Invalid credentials.";
@@ -97,10 +107,10 @@ async function register() {
     const res = await apiCall('register', { name, mobile, email, password: pass });
     
     if (res.success) {
-        msg.innerText = res.message; // "Profile created. Please login."
+        msg.innerText = res.message;
         msg.style.color = "green";
         
-        // Automatically switch back to login screen after 1.5 seconds
+        // Switch back to login screen
         setTimeout(() => {
             toggleAuth(); 
         }, 1500);
@@ -111,7 +121,7 @@ async function register() {
 }
 
 function logout() {
-    // Hide dashboard, show landing page, clear fields
+    currentUser = null;
     document.getElementById('dashboard-section').classList.add('hidden');
     document.getElementById('landing-section').classList.remove('hidden');
     document.getElementById('log-email').value = "";
@@ -119,27 +129,23 @@ function logout() {
     document.getElementById('auth-msg').innerText = "";
 }
 
-// --- 4. PAGE INITIALIZATION ---
 
-// Run automatically when the webpage loads
+// --- 5. INITIALIZATION & PUBLIC CATALOG ---
 window.onload = async function() {
-    // 1. Double check that API_URL is defined at the top of your file
     if (typeof API_URL === 'undefined' || API_URL === "YOUR_APP_SCRIPT_URL_HERE") {
         console.warn("API_URL is not set up yet. Loading preview data.");
         displaySampleCourses();
         return;
     }
 
-    // 2. Attempt to fetch real courses from Google Sheets
     const response = await apiCall('getPublicCourses');
     if (response && response.success) {
         displayCourses(response.courses);
     } else {
-        displaySampleCourses(); // Fallback so page doesn't look empty
+        displaySampleCourses(); 
     }
 };
 
-// Helper function to build course cards visually
 function displayCourses(courses) {
     const list = document.getElementById('courses-list');
     if (!list) return;
@@ -149,23 +155,96 @@ function displayCourses(courses) {
         return;
     }
 
-    list.innerHTML = ""; // Clear loader text
+    list.innerHTML = ""; 
     courses.forEach(course => {
         list.innerHTML += `
             <div class="card">
                 <h4 class="primary-text" style="font-size:1.2rem; margin-bottom:5px;">${course.name}</h4>
                 <p style="color:#64748b; font-size:0.95rem; margin-bottom:10px;">${course.desc}</p>
-                <span style="font-weight:600; color:#004d99;">Cost: ₹${course.price}</span>
+                <span style="font-weight:600; color:#004d99; display:block; margin-bottom:10px;">Cost: ₹${course.price}</span>
+                <button onclick="enrollIn('${course.name}')" style="padding:10px;">Enroll Now</button>
             </div>
         `;
     });
 }
 
-// Fallback preview data so your page looks professional even if your Google Sheet is offline
 function displaySampleCourses() {
     const sample = [
         { name: "JAIIB / CAIIB Elite Masterclass", desc: "Comprehensive mock papers and advanced practice configurations.", price: "4999" },
         { name: "Credit Management & Risk Analysis", desc: "Targeted operational test sets tailored for promotional exams.", price: "2999" }
     ];
     displayCourses(sample);
+}
+
+
+// --- 6. DASHBOARD & ENROLLMENT ENGINE ---
+async function loadDashboard() {
+    const coursesArea = document.getElementById('my-courses-area');
+    coursesArea.innerHTML = "<p style='color:#0066cc; font-weight:600;'>Syncing vault records...</p>";
+
+    const res = await apiCall('getCourseData', { userId: currentUser.id });
+    
+    if (res.success) {
+        window.academyStructure = res.structure; 
+        renderMyCourses();
+    } else {
+        coursesArea.innerHTML = "<p style='color:#d32f2f;'>Failed to load academy data.</p>";
+    }
+}
+
+function renderMyCourses() {
+    const coursesArea = document.getElementById('my-courses-area');
+    coursesArea.innerHTML = "<h3 style='margin-bottom:15px; color:#333;'>My Enrolled Modules</h3>";
+    
+    let enrolledArray = [];
+    if (currentUser.enrolled) {
+        enrolledArray = currentUser.enrolled.split(',').map(c => c.trim());
+    }
+
+    if (enrolledArray.length === 0) {
+        coursesArea.innerHTML += `
+            <div style="background:#f8fafc; padding:20px; border-radius:8px; text-align:center; border:1px dashed #cbd5e1;">
+                <p style="color:#64748b; margin-bottom:15px;">You have not joined any masterclasses yet.</p>
+                <button onclick="logout()" style="width:auto; padding:10px 20px;">Browse Catalog</button>
+            </div>
+        `;
+        return;
+    }
+
+    enrolledArray.forEach(course => {
+        // Ensure empty strings from trailing commas aren't rendered
+        if(course.length > 0) {
+            coursesArea.innerHTML += `
+                <div class="card" style="border-left: 4px solid #004d99;">
+                    <h4 class="primary-text" style="font-size:1.2rem; margin-bottom:10px;">${course}</h4>
+                    <button onclick="openCourse('${course}')" style="margin-top:0; padding:10px; background:#f0f4f8; color:#004d99; border:1px solid #004d99;">
+                        Access Modules
+                    </button>
+                </div>
+            `;
+        }
+    });
+}
+
+async function enrollIn(courseName) {
+    if (!currentUser) {
+        alert("Please login to enroll in a course.");
+        showAuth();
+        return;
+    }
+
+    const res = await apiCall('enrollCourse', { userId: currentUser.id, course: courseName });
+    
+    if (res.success) {
+        alert(`Successfully enrolled in ${courseName}!`);
+        currentUser.enrolled = res.newEnrolled; 
+        loadDashboard(); 
+    } else {
+        alert("Enrollment failed. Please try again.");
+    }
+}
+
+// Placeholder for the Test Viewer transition
+function openCourse(courseName) {
+    alert("Module ready: " + courseName + ". \n(Test Viewer UI coming in next update!)");
 }
