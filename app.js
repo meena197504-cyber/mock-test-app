@@ -97,3 +97,51 @@ function logout() {
     document.getElementById('log-pass').value = "";
     document.getElementById('auth-msg').innerText = "";
 }
+// Run automatically when the webpage loads
+window.onload = async function() {
+    // 1. Double check that API_URL is defined at the top of your file
+    if (typeof API_URL === 'undefined' || API_URL === "YOUR_APP_SCRIPT_URL_HERE") {
+        console.warn("API_URL is not set up yet. Loading preview data.");
+        displaySampleCourses();
+        return;
+    }
+
+    // 2. Attempt to fetch real courses from Google Sheets
+    const response = await apiCall('getPublicCourses');
+    if (response && response.success) {
+        displayCourses(response.courses);
+    } else {
+        displaySampleCourses(); // Fallback so page doesn't look empty
+    }
+};
+
+// Helper function to build course cards visually
+function displayCourses(courses) {
+    const list = document.getElementById('courses-list');
+    if (!list) return;
+    
+    if (!courses || courses.length === 0) {
+        list.innerHTML = "<p style='text-align:center; color:#64748b;'>No active academy streams found.</p>";
+        return;
+    }
+
+    list.innerHTML = ""; // Clear loader text
+    courses.forEach(course => {
+        list.innerHTML += `
+            <div class="card">
+                <h4 class="primary-text" style="font-size:1.2rem; margin-bottom:5px;">${course.name}</h4>
+                <p style="color:#64748b; font-size:0.95rem; margin-bottom:10px;">${course.desc}</p>
+                <span style="font-weight:600; color:#004d99;">Cost: ₹${course.price}</span>
+            </div>
+        `;
+    });
+}
+
+// Fallback preview data so your page looks professional even if your Google Sheet is offline
+function displaySampleCourses() {
+    const sample = [
+        { name: "JAIIB / CAIIB Elite Masterclass", desc: "Comprehensive mock papers and advanced practice configurations.", price: "4999" },
+        { name: "Credit Management & Risk Analysis", desc: "Targeted operational test sets tailored for promotional exams.", price: "2999" }
+    ];
+    displayCourses(sample);
+}
