@@ -34,7 +34,13 @@ function showAuth() {
     document.getElementById('auth-section').classList.remove('hidden');
 }
 
-function toggleAuth() {
+function toggleAuth() 
+function browseCatalog() {
+    // Keeps the user logged in, but switches the view back to the catalog
+    document.getElementById('dashboard-section').classList.add('hidden');
+    document.getElementById('landing-section').classList.remove('hidden');
+}
+{
     const loginBox = document.getElementById('login-box');
     const regBox = document.getElementById('reg-box');
     const msg = document.getElementById('auth-msg');
@@ -205,7 +211,7 @@ function renderMyCourses() {
         coursesArea.innerHTML += `
             <div style="background:#f8fafc; padding:20px; border-radius:8px; text-align:center; border:1px dashed #cbd5e1;">
                 <p style="color:#64748b; margin-bottom:15px;">You have not joined any masterclasses yet.</p>
-                <button onclick="logout()" style="width:auto; padding:10px 20px;">Browse Catalog</button>
+                <button onclick="browseCatalog()" style="width:auto; padding:10px 20px;">Browse Catalog</button>
             </div>
         `;
         return;
@@ -238,6 +244,11 @@ async function enrollIn(courseName) {
     if (res.success) {
         alert(`Successfully enrolled in ${courseName}!`);
         currentUser.enrolled = res.newEnrolled; 
+        
+        // Hide the catalog and bring them back to their updated dashboard
+        document.getElementById('landing-section').classList.add('hidden');
+        document.getElementById('dashboard-section').classList.remove('hidden');
+        
         loadDashboard(); 
     } else {
         alert("Enrollment failed. Please try again.");
