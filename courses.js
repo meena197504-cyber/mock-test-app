@@ -76,18 +76,65 @@ function renderMyCourses() {
 }
 
 async function enrollIn(courseName) {
-    if (!currentUser) { alert("Please login to enroll."); showAuth(); return; }
-    const res = await apiCall('enrollCourse', { userId: currentUser.id, course: courseName });
-    if (res.success) {
-        alert(`Successfully enrolled in ${courseName}!`);
-        currentUser.enrolled = res.newEnrolled; 
-        document.getElementById('landing-section').classList.add('hidden');
-        document.getElementById('auth-section').classList.add('hidden');
-        document.getElementById('dashboard-section').classList.remove('hidden');
-        loadDashboard(); 
-    } else {
-        alert("Enrollment failed.");
+    if (!currentUser) { 
+        alert("Please login to enroll."); 
+        showAuth(); 
+        return; 
     }
+
+    // Razorpay deals in "paise" (subunits). So 50 RS = 50 * 100 paise.
+    const coursePriceInPaise = 50 * 100; 
+
+    // Configure the Razorpay Checkout Modal
+    var options = {
+        "key": "rzp_test_T59AnvCHSAwwr2", // CRITICAL: You must replace this!
+        "amount": coursePriceInPaise, 
+        "currency": "INR",
+        "name": "MS ASTRA Academy",
+        "description": "Enrollment for: " + courseName,
+        "image": "https://cdn-icons-png.flaticon.com/512/2830/2830284.png", // Optional professional logo
+        
+        // This function runs ONLY if the payment is successful
+        "handler": async function (response) {
+            
+            // 1. Payment succeeded! You can log the Payment ID for your records
+            console.log("Payment ID: " + response.razorpay_payment_id);
+            
+            // 2. NOW we tell Google Sheets to unlock the course for the user
+            alert("Payment of ₹50 successful! Unlocking your course...");
+            
+            const res = await apiCall('enrollCourse', { userId: currentUser.id, course: courseName });
+            
+            if (res.success) {
+                currentUser.enrolled = res.newEnrolled; 
+                document.getElementById('landing-section').classList.add('hidden');
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                loadDashboard(); 
+            } else {
+                alert("Vault error: Payment processed, but course unlock failed. Please contact admin with your Payment ID.");
+            }
+        },
+        
+        // Prefill the user's details so they don't have to type them again
+        "prefill": {
+            "name": currentUser.name,
+            // Assuming your backend sends the mobile number, otherwise it leaves it blank
+            "contact": currentUser.mobile || "" 
+        },
+        "theme": {
+            "color": "#004d99" // Matches your corporate blue theme!
+        }
+    };
+
+    // Initialize and open the payment window
+    var rzp1 = new Razorpay(options);
+    
+    rzp1.on('payment.failed', function (response){
+        alert("Payment failed or cancelled. Reason: " + response.error.description);
+    });
+    
+    rzp1.open();
 }
 
 // Triggers the Test Engine!
