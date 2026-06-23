@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MS Astra | Elite Banker Academy</title>
-    <link rel="stylesheet" href="styles.css?v=1.0.1">
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <link rel="stylesheet" href="styles.css?v=2.0"> 
 </head>
 <body>
 
@@ -45,26 +44,25 @@
     <div id="dashboard-section" class="container hidden">
         <h2>Welcome, <span id="user-name" class="primary-text"></span></h2>
         <button onclick="logout()" class="btn-outline" style="margin-bottom:20px;">Logout</button>
-        
         <div id="my-courses-area"></div>
-        <div id="subjects-area" class="hidden"></div>
-        <div id="tests-area" class="hidden"></div>
     </div>
 
     <div id="test-section" class="container hidden">
         <div class="test-header">
-            <h3>Q <span id="q-num">1</span> / <span id="total-q"></span></h3>
+            <h3 class="primary-text">Q <span id="q-num">1</span> / <span id="total-q"></span></h3>
             <div class="timer" id="timer">10:00</div>
         </div>
         <div style="margin: 20px 0;">
-            <p id="q-text" style="font-size: 1.2rem; color:#333;">Initializing...</p>
-            <div id="options-container" style="margin-top: 15px;"></div>
+            <p id="q-text" style="font-size: 1.2rem; color:#333; font-weight:600; margin-bottom:20px;">Initializing...</p>
+            <div id="options-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
         </div>
         <button onclick="nextQuestion()" id="next-btn" disabled>Lock Answer & Proceed</button>
+        <button onclick="exitTest()" class="btn-outline" style="margin-top:15px;">Abandon Test</button>
     </div>
 
     <script src="api.js"></script>
     <script src="auth.js"></script>
     <script src="courses.js"></script>
+    <script src="test.js"></script>
 </body>
 </html>
