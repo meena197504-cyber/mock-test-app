@@ -1,75 +1,49 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
-    background: #f0f4f8; /* Professional light gray/blue background */
-    color: #1a2b3c; /* Deep slate text */
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    padding: 20px;
+    background: #f0f4f8; color: #1a2b3c; font-family: 'Inter', sans-serif;
+    min-height: 100vh; display: flex; justify-content: center; padding: 20px;
 }
-
 h1, h2, h3 { font-weight: 700; letter-spacing: -0.5px; }
+.primary-text { color: #004d99; } .secondary-text { color: #0066cc; }
 
-.primary-text { color: #004d99; } /* Corporate Blue */
-.secondary-text { color: #0066cc; } /* Lighter Blue Accent */
-
-/* Clean Card Panels */
 .container {
-    background: #ffffff;
-    border: 1px solid #e1e8ed;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 800px;
-    padding: 40px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    margin-top: 20px;
+    background: #ffffff; border: 1px solid #e1e8ed; border-radius: 12px;
+    width: 100%; max-width: 800px; padding: 40px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); margin-top: 20px;
 }
-
 .hidden { display: none !important; }
 
-/* Inputs & Buttons */
 input {
-    width: 100%; padding: 14px; margin: 10px 0;
-    background: #f8fafc; border: 1px solid #cbd5e1;
-    border-radius: 6px; color: #333; font-size: 16px; transition: border-color 0.2s;
+    width: 100%; padding: 14px; margin: 10px 0; background: #f8fafc; 
+    border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px;
 }
 input:focus { border-color: #0066cc; outline: none; box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1); }
 
 button {
-    width: 100%; padding: 15px; margin-top: 15px;
-    background: #004d99; border: none;
-    color: #ffffff; border-radius: 6px; font-weight: 600;
+    width: 100%; padding: 15px; margin-top: 15px; background: #004d99; 
+    border: none; color: #ffffff; border-radius: 6px; font-weight: 600;
     font-size: 16px; cursor: pointer; transition: all 0.2s;
 }
-button:hover { background: #003d7a; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0, 77, 153, 0.2); }
-button:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; transform: none; }
+button:hover { background: #003d7a; transform: translateY(-1px); }
+button:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
 
 .btn-outline { background: transparent; border: 2px solid #d32f2f; color: #d32f2f; }
-.btn-outline:hover { background: #d32f2f; color: #ffffff; box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2); }
+.btn-outline:hover { background: #d32f2f; color: #ffffff; }
 
-/* Landing Page Specifics */
 .hero { text-align: center; padding: 30px 0; border-bottom: 1px solid #e1e8ed; margin-bottom: 20px; }
-.hero h1 { font-size: 2.5rem; margin-bottom: 8px; }
-.hero p { color: #64748b; font-size: 1.1rem; }
-
-/* Interactive Text Links */
-.auth-link { text-align: center; cursor: pointer; color: #0066cc; margin-top: 15px; font-weight: 500; font-size: 0.95rem; }
+.hero h1 { font-size: 2.5rem; margin-bottom: 8px; } .hero p { color: #64748b; font-size: 1.1rem; }
+.auth-link { text-align: center; cursor: pointer; color: #0066cc; margin-top: 15px; font-weight: 500; }
 .auth-link:hover { text-decoration: underline; }
 
-/* Course & Test Cards */
 .card {
-    background: #ffffff; border: 1px solid #e1e8ed;
-    border-radius: 8px; padding: 20px; margin: 15px 0; transition: 0.2s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    background: #ffffff; border: 1px solid #e1e8ed; border-radius: 8px; 
+    padding: 20px; margin: 15px 0; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 .card:hover { border-color: #0066cc; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
 
-/* Test Interface */
 .test-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e1e8ed; padding-bottom: 15px; }
 .timer { color: #d32f2f; font-size: 1.1rem; font-weight: 700; background: #ffebee; padding: 5px 15px; border-radius: 20px; }
-.option-btn { text-align: left; background: #f8fafc; border: 1px solid #cbd5e1; color: #333; margin: 8px 0; font-weight: 500; }
-.option-btn.selected { border-color: #004d99; background: #e6f0fa; color: #004d99; }
+.option-btn { text-align: left; background: #f8fafc; border: 1px solid #cbd5e1; color: #333; padding: 15px; border-radius: 6px; cursor: pointer; font-weight: 500;}
+.option-btn:hover { background: #e1e8ed; }
+.option-btn.selected { border-color: #004d99; background: #e6f0fa; color: #004d99; border-width: 2px; }
