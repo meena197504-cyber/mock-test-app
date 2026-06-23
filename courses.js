@@ -1,19 +1,28 @@
 // ==========================================
-// FILE: courses.js (Catalog & Dashboard)
+// FILE: courses.js (Catalog, Dashboard & Enrollment)
 // ==========================================
+
 window.onload = async function() {
-    if (typeof API_URL === 'undefined' || API_URL === "https://script.google.com/macros/s/AKfycbyE3zs1OIZamJFv6beldzijirdsRFH2nq07rJCxjuAidXT0w0sA3q5vHsnQPwn4NFwwjg/exec") {
-        displaySampleCourses(); return;
+    if (typeof API_URL === 'undefined' || API_URL === "YOUR_APP_SCRIPT_URL_HERE") {
+        displaySampleCourses(); 
+        return;
     }
     const response = await apiCall('getPublicCourses');
-    if (response && response.success) { displayCourses(response.courses); } 
-    else { displaySampleCourses(); }
+    if (response && response.success) { 
+        displayCourses(response.courses); 
+    } else { 
+        displaySampleCourses(); 
+    }
 };
 
 function displayCourses(courses) {
     const list = document.getElementById('courses-list');
     if (!list) return;
-    if (!courses || courses.length === 0) { list.innerHTML = "<p style='text-align:center; color:#64748b;'>No active academy streams found.</p>"; return; }
+    
+    if (!courses || courses.length === 0) { 
+        list.innerHTML = "<p style='text-align:center; color:#64748b;'>No active academy streams found.</p>"; 
+        return; 
+    }
 
     list.innerHTML = ""; 
     courses.forEach(c => {
@@ -22,15 +31,15 @@ function displayCourses(courses) {
                 <h4 class="primary-text" style="font-size:1.2rem; margin-bottom:5px;">${c.name}</h4>
                 <p style="color:#64748b; font-size:0.95rem; margin-bottom:10px;">${c.desc}</p>
                 <span style="font-weight:600; color:#004d99; display:block; margin-bottom:10px;">Cost: ₹${c.price}</span>
-                <button onclick="enrollIn('${c.name}')" style="padding:10px;">Enroll Now</button>
+                <button onclick="enrollIn('${c.name}')" style="padding:10px;">Enroll Now (₹50)</button>
             </div>`;
     });
 }
 
 function displaySampleCourses() {
     displayCourses([
-        { name: "JAIIB / CAIIB Elite", desc: "Comprehensive mock papers.", price: "4999" },
-        { name: "Credit Management", desc: "Targeted operational sets.", price: "2999" }
+        { name: "JAIIB / CAIIB Elite Masterclass", desc: "Comprehensive mock papers.", price: "50" },
+        { name: "Credit Management", desc: "Targeted operational sets.", price: "50" }
     ]);
 }
 
@@ -82,27 +91,30 @@ async function enrollIn(courseName) {
         return; 
     }
 
+    // Safety Check: Did Razorpay actually load from index.html?
+    if (typeof Razorpay === 'undefined') {
+        alert("Payment gateway is blocked or loading. Please refresh the page or check your internet connection.");
+        return;
+    }
+
     // Razorpay deals in "paise" (subunits). So 50 RS = 50 * 100 paise.
     const coursePriceInPaise = 50 * 100; 
 
     // Configure the Razorpay Checkout Modal
     var options = {
-        "key": "rzp_test_T59AnvCHSAwwr2", // CRITICAL: You must replace this!
+        // CRITICAL: Replace this with your actual Razorpay Test Key ID!
+        "key": "rzp_test_T59AnvCHSAwwr2", 
         "amount": coursePriceInPaise, 
         "currency": "INR",
         "name": "MS ASTRA Academy",
         "description": "Enrollment for: " + courseName,
-        "image": "https://cdn-icons-png.flaticon.com/512/2830/2830284.png", // Optional professional logo
+        "image": "https://cdn-icons-png.flaticon.com/512/2830/2830284.png", 
         
-        // This function runs ONLY if the payment is successful
         "handler": async function (response) {
-            
-            // 1. Payment succeeded! You can log the Payment ID for your records
             console.log("Payment ID: " + response.razorpay_payment_id);
-            
-            // 2. NOW we tell Google Sheets to unlock the course for the user
             alert("Payment of ₹50 successful! Unlocking your course...");
             
+            // Tell Google Sheets to unlock the course for the user
             const res = await apiCall('enrollCourse', { userId: currentUser.id, course: courseName });
             
             if (res.success) {
@@ -112,34 +124,35 @@ async function enrollIn(courseName) {
                 document.getElementById('dashboard-section').classList.remove('hidden');
                 loadDashboard(); 
             } else {
-                alert("Vault error: Payment processed, but course unlock failed. Please contact admin with your Payment ID.");
+                alert("Vault error: Payment processed, but course unlock failed. Please contact admin.");
             }
         },
-        
-        // Prefill the user's details so they don't have to type them again
         "prefill": {
-            "name": currentUser.name,
-            // Assuming your backend sends the mobile number, otherwise it leaves it blank
+            "name": currentUser.name || "Recruit",
             "contact": currentUser.mobile || "" 
         },
         "theme": {
-            "color": "#004d99" // Matches your corporate blue theme!
+            "color": "#004d99" 
         }
     };
 
-    // Initialize and open the payment window
-    var rzp1 = new Razorpay(options);
-    
-    rzp1.on('payment.failed', function (response){
-        alert("Payment failed or cancelled. Reason: " + response.error.description);
-    });
-    
-    rzp1.open();
+    try {
+        var rzp1 = new Razorpay(options);
+        rzp1.on('payment.failed', function (response){
+            alert("Payment failed or cancelled. Reason: " + response.error.description);
+        });
+        rzp1.open();
+    } catch (error) {
+        alert("Payment system error. Please ensure your Razorpay Test Key is correct!");
+        console.error("Razorpay Error:", error);
+    }
 }
 
-// Triggers the Test Engine!
+// Triggers the Test Engine from test.js
 function openCourse(courseName) {
-    // For fast execution, we are passing a default 'Test 1'
-    // Ensure you have questions in your Google Sheet mapped to 'Test 1'
-    startTest(courseName, "Test 1"); 
+    if (typeof startTest === 'function') {
+        startTest(courseName, "Test 1"); 
+    } else {
+        alert("Test engine module is not loading properly.");
+    }
 }
