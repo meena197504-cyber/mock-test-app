@@ -1,11 +1,9 @@
 // ==========================================
-// FILE 3: courses.js (Catalog, Dashboard & Enrollment)
+// FILE: courses.js (Catalog & Dashboard)
 // ==========================================
-
 window.onload = async function() {
     if (typeof API_URL === 'undefined' || API_URL === "https://script.google.com/macros/s/AKfycbyE3zs1OIZamJFv6beldzijirdsRFH2nq07rJCxjuAidXT0w0sA3q5vHsnQPwn4NFwwjg/exec") {
-        displaySampleCourses();
-        return;
+        displaySampleCourses(); return;
     }
     const response = await apiCall('getPublicCourses');
     if (response && response.success) { displayCourses(response.courses); } 
@@ -18,23 +16,22 @@ function displayCourses(courses) {
     if (!courses || courses.length === 0) { list.innerHTML = "<p style='text-align:center; color:#64748b;'>No active academy streams found.</p>"; return; }
 
     list.innerHTML = ""; 
-    courses.forEach(course => {
+    courses.forEach(c => {
         list.innerHTML += `
             <div class="card">
-                <h4 class="primary-text" style="font-size:1.2rem; margin-bottom:5px;">${course.name}</h4>
-                <p style="color:#64748b; font-size:0.95rem; margin-bottom:10px;">${course.desc}</p>
-                <span style="font-weight:600; color:#004d99; display:block; margin-bottom:10px;">Cost: ₹${course.price}</span>
-                <button onclick="enrollIn('${course.name}')" style="padding:10px;">Enroll Now</button>
+                <h4 class="primary-text" style="font-size:1.2rem; margin-bottom:5px;">${c.name}</h4>
+                <p style="color:#64748b; font-size:0.95rem; margin-bottom:10px;">${c.desc}</p>
+                <span style="font-weight:600; color:#004d99; display:block; margin-bottom:10px;">Cost: ₹${c.price}</span>
+                <button onclick="enrollIn('${c.name}')" style="padding:10px;">Enroll Now</button>
             </div>`;
     });
 }
 
 function displaySampleCourses() {
-    const sample = [
-        { name: "JAIIB / CAIIB Elite Masterclass", desc: "Comprehensive mock papers and advanced practice configurations.", price: "4999" },
-        { name: "Credit Management & Risk Analysis", desc: "Targeted operational test sets tailored for promotional exams.", price: "2999" }
-    ];
-    displayCourses(sample);
+    displayCourses([
+        { name: "JAIIB / CAIIB Elite", desc: "Comprehensive mock papers.", price: "4999" },
+        { name: "Credit Management", desc: "Targeted operational sets.", price: "2999" }
+    ]);
 }
 
 async function loadDashboard() {
@@ -71,7 +68,7 @@ function renderMyCourses() {
                 <div class="card" style="border-left: 4px solid #004d99;">
                     <h4 class="primary-text" style="font-size:1.2rem; margin-bottom:10px;">${course}</h4>
                     <button onclick="openCourse('${course}')" style="margin-top:0; padding:10px; background:#f0f4f8; color:#004d99; border:1px solid #004d99;">
-                        Access Modules
+                        Launch Mock Test
                     </button>
                 </div>`;
         }
@@ -79,8 +76,7 @@ function renderMyCourses() {
 }
 
 async function enrollIn(courseName) {
-    if (!currentUser) { alert("Please login to enroll in a course."); showAuth(); return; }
-
+    if (!currentUser) { alert("Please login to enroll."); showAuth(); return; }
     const res = await apiCall('enrollCourse', { userId: currentUser.id, course: courseName });
     if (res.success) {
         alert(`Successfully enrolled in ${courseName}!`);
@@ -90,10 +86,13 @@ async function enrollIn(courseName) {
         document.getElementById('dashboard-section').classList.remove('hidden');
         loadDashboard(); 
     } else {
-        alert("Enrollment failed. Please try again.");
+        alert("Enrollment failed.");
     }
 }
 
+// Triggers the Test Engine!
 function openCourse(courseName) {
-    alert("Module ready: " + courseName + ". \n(Test Viewer UI coming in next update!)");
+    // For fast execution, we are passing a default 'Test 1'
+    // Ensure you have questions in your Google Sheet mapped to 'Test 1'
+    startTest(courseName, "Test 1"); 
 }
